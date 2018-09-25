@@ -1,0 +1,39 @@
+{
+  "sampleData": {
+    "5e467ccf-a881-4b48-840f-107d534f6db4": {
+      "payload": "sample_data/list_.dwl"
+    },
+    "6156cfbe-4acf-4126-b2d3-af6343d543da": {
+      "payload": "sample_data/list__8.dwl"
+    },
+    "fa35e11f-b95b-407d-8135-e4a6a712748b": {
+      "payload": "sample_data/list__2.dwl"
+    },
+    "655d0699-7623-4c15-823b-74344ac21c2a": {
+      "payload": "sample_data/list_unknown.flatfile",
+      "vars-menu": "sample_data/list__3.dwl"
+    },
+    "74a89ef8-b809-4083-94d4-f18d49a2accb": {
+      "payload": "sample_data/Incoming Slack Message_1.dwl"
+    },
+    "906e181a-3ed3-4e21-b36f-5683b1cf4d7f": {
+      "payload": "sample_data/unknown_4.dwl",
+      "vars-selecteditem": "sample_data/list__5.dwl"
+    },
+    "679f097e-7e5e-4a14-88e9-9b0699939a49": {
+      "payload": "sample_data/list__9.dwl"
+    },
+    "51d8beae-9520-4805-81b6-fdcb422a37e5": {
+      "payload": "sample_data/unknown_1.json"
+    },
+    "329ef027-a4b8-4999-bce1-acba0cd11e6a": {
+      "payload": "sample_data/unknown.json"
+    },
+    "5e1c9ec7-893d-4e37-ab25-a390993a893f": {
+      "payload": "sample_data/list__7.dwl"
+    },
+    "24bb1e8e-833d-4b34-9ff0-24161d22e46f": {
+      "vars-menu": "sample_data/list__4.dwl"
+    }
+  }
+}

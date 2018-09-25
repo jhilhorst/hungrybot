@@ -1,0 +1,46 @@
+[
+  {
+    "id": "token",
+    "name": "eJ7BxAHrBaEA9OZ4LojKuykn"
+  },
+  {
+    "id": "team_id",
+    "name": "T77E12XAR"
+  },
+  {
+    "id": "team_domain",
+    "name": "jhilhorst"
+  },
+  {
+    "id": "channel_id",
+    "name": "C793RC3M3"
+  },
+  {
+    "id": "channel_name",
+    "name": "test"
+  },
+  {
+    "id": "user_id",
+    "name": "U77BKGBKN"
+  },
+  {
+    "id": "user_name",
+    "name": "jhilhorst"
+  },
+  {
+    "id": "command",
+    "name": "/list"
+  },
+  {
+    "id": "text",
+    "name": ""
+  },
+  {
+    "id": "response_url",
+    "name": "https://hooks.slack.com/commands/T77E12XAR/422018410016/0fCzEzD0ZBpyF5WCNGxnhRvA"
+  },
+  {
+    "id": "trigger_id",
+    "name": "424077962406.245477099365.11472f52ab3b4eae64d42f1f1a57ace0"
+  }
+]

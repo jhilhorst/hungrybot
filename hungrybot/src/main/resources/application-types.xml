@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="slack-request" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#329ef027-a4b8-4999-bce1-acba0cd11e6a">
+    <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#4134605c-4342-49ef-98c2-c5e630447634">
+    <types:processor-declaration/>
+  </types:enrichment>
+</types:mule>

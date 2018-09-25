@@ -1,0 +1,6 @@
+form: FIXEDWIDTH
+name: 'flatFile'
+values: 
+- { name: 'id', type: String, length: 2 }
+- { name: 'separator', type: String, length: 2,tagValue: '-' }
+- { name: 'name', type: String, length: 25 }

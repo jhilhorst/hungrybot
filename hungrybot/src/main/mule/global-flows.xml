@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="global-checkUserExist" doc:id="b032c4c0-fed7-4c9e-b7c8-d4faf4274871" >
+		<db:select doc:name="Select" doc:id="7593a959-b9bc-48c9-bf32-e0f0944b18dd" config-ref="Database_Config" target="userexist">
+			<db:sql >select * from users where userid = :userid</db:sql>
+			<db:input-parameters ><![CDATA[#[
+'userid' : payload.slack.user_id
+
+]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="9bf882f3-22bd-4d2d-adf8-aaa9f6bd745e" >
+			<when expression="#[vars.userexist.userid == null]" >
+				<flow-ref doc:name="global-insertUser" doc:id="6b55026c-7834-41a6-9895-670f2b9fecaf" name="global-insertUser"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="cb40e0da-e8a2-4aec-b675-a54a987181eb" message="User #[vars.userexist.userid] already exists."/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="01abbecb-b15f-46d1-82c8-d863bc5207fc" />
+	</flow>
+	<flow name="global-insertUser" doc:id="2e77986a-11cf-458d-b534-73cc727862af" >
+		<db:insert doc:name="Insert" doc:id="3aafacaf-b729-4449-aca7-fdb82d5d9708" config-ref="Database_Config">
+			<db:sql >insert into users
+(userid,name)
+values( :userid, :name);</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+'userid' : payload.slack.user_id,
+'name' : payload.slack.user_name
+}]]]></db:input-parameters>
+		</db:insert>
+	</flow>
+	<flow name="global-closedYN" doc:id="9fde01e7-1d33-4011-91e4-8e4fe839a2f7" >
+		<db:select doc:name="Closed YN" doc:id="7e62ef6e-a2c2-4ba0-8a83-492139011181" config-ref="Database_Config">
+			<db:sql >select closed from active where active.id = (select max(id) from active)</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="679f097e-7e5e-4a14-88e9-9b0699939a49" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+if (payload[0].closed == 0 )'n' else 'y'
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

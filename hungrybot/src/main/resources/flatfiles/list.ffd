@@ -1,0 +1,8 @@
+form: FIXEDWIDTH
+name: 'list'
+values: 
+- { name: 'count', type: String, length: 2 }
+- { name: 'separator', type: String, length: 2,tagValue: 'x' }
+- { name: 'itemname', type: String, length: 25 }
+- { name: 'separator', type: String, length: 2,tagValue: ' ' }
+- { name: 'name', type: String, length: 25 }

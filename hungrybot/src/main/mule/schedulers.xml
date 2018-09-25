@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:slack="http://www.mulesoft.org/schema/mule/slack"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="schedulers-StartVote" doc:id="6fbfa8ca-4826-406c-a94f-85ac3c4eaf87" >
+		<scheduler doc:name="Scheduler" doc:id="dba72fba-01ae-45d1-9ba4-fc15718a3668" >
+			<scheduling-strategy >
+				<cron expression="${hungrybot.startvote.cron}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<db:insert doc:name="activate vote" doc:id="77c71158-bff9-41b5-8a1f-331793815bf9" config-ref="Database_Config">
+			<db:sql >insert into active(date,active,type,typestarttime)
+values(
+:date,
+:active,
+:type,
+typestarttime)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+'active' : 'y',
+'type' : 'vote',
+'date' : now() as Date,
+'typestarttime' : now() as DateTime
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="d68595ef-4e1d-42a1-9493-34f8256012ea">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="9eb87f23-3938-4499-91a8-b5941d80abe8" config-ref="Slack_Config">
+			<slack:message ><![CDATA[Time to start voting.
+Type /restaurants for a list of competing restaurants.
+After that type /vote with the number of the restaurant.]]></slack:message>
+		</slack:post-message>
+	
+</flow>
+	<flow name="schedulers-EndVote" doc:id="a54494a5-f276-49c5-9658-e0f5b0c5513d" >
+		<scheduler doc:name="Scheduler" doc:id="caf4578d-6033-41f4-92a6-a05c8f2785a4" >
+			<scheduling-strategy >
+				<cron expression="${hungrybot.endvote.cron}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<db:select doc:name="Select winner" doc:id="bf1955ea-346d-44d3-83b6-4bc5370489f0" config-ref="Database_Config" target="winner">
+			<db:sql >select 
+restaurants.id,
+restaurants.name
+from
+votes,
+restaurants
+where 
+restaurants.id = votes.vote
+and votes.voteid = (select max(id) from active)
+group by votes.vote
+order by vote DESC LIMIT 1;</db:sql>
+		</db:select>
+		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat -Winner" doc:id="338a1810-363b-47fb-9554-a6f784bbf827" config-ref="Slack_Config">
+			<slack:message><![CDATA[#['Vote Ended. The winner is "' ++ vars.winner[0][0] ++ '"']]]></slack:message>
+		</slack:post-message>
+		<db:update doc:name="update winner to active" doc:id="6629b591-95ec-4fff-9bca-0e889245bd9c" config-ref="Database_Config">
+			<db:sql>update active
+SET active = :active,
+winner = :winner
+where date =  :date
+and type = :type</db:sql>
+			<db:input-parameters><![CDATA[#[{
+'active' : 'n',
+'type' : 'vote',
+'date' : now() as Date,
+'winner' : vars.winner[0][1]
+}]]]></db:input-parameters>
+		</db:update>
+		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="b46e7790-80f3-46d8-a497-ce7159786637" config-ref="Slack_Config">
+			<slack:message ><![CDATA[So start ordering:
+Use /menu for the menulist of the restaurant that won.]]></slack:message>
+		</slack:post-message>
+	</flow>
+	<flow name="schedulers-almost-finished" doc:id="1394e542-0e35-43f4-a1ae-3944214d6e5c" >
+		<scheduler doc:name="Almost warning" doc:id="2be1338f-efa4-440f-a7aa-47591bfcb7ff" >
+			<scheduling-strategy >
+				<cron expression="${hungrybot.warning.cron}" />
+			</scheduling-strategy>
+		</scheduler>
+		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="08ebbffb-ebe6-4b9e-9f92-49ffff64548e" config-ref="Slack_Config">
+			<slack:message ><![CDATA[Attention: 15 minutes left to place your order.]]></slack:message>
+		</slack:post-message>
+	</flow>
+	<flow name="schedulers-finished" doc:id="1c644b91-0d1d-44f1-8256-1100cda6e09e" >
+		<scheduler doc:name="Finished" doc:id="4e51f9b8-0810-4cf7-9dd8-b691d9aef4d9" >
+			<scheduling-strategy >
+				<cron expression="${hungrybot.finished.cron}" />
+			</scheduling-strategy>
+		</scheduler>
+		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="3392c4f0-bd7c-4a17-bb22-c08e959bbf11" config-ref="Slack_Config">
+			<slack:message ><![CDATA[Time out: No more orders can be placed]]></slack:message>
+		</slack:post-message>
+		<db:update doc:name="Update" doc:id="2c3b6812-848d-4a19-be8b-15558af77d8c" config-ref="Database_Config">
+			<db:sql >update active
+SET closed = 1
+where date =  :date
+and type = :type</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+'type' : 'vote',
+'date' : now() as Date
+}]]]></db:input-parameters>
+		</db:update>
+	</flow>
+	
+	
+</mule>

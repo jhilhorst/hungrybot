@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:slack="http://www.mulesoft.org/schema/mule/slack" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+              http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd">
+              
+<!-- 	<db:config name="Database_Config" doc:name="Database Config" doc:id="328fb9f8-d982-4018-aeae-3e052ee94953">
+		<db:mssql-connection host="${mssql.server}" user="${mssql.user}" password="${mssql.password}" databaseName="${mssql.database}" port="${mssql.port}"/>
+	</db:config> -->
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="37cbc22d-d7f6-4f3f-8cfc-040cdcd03bee" basePath="${http.basepath}">
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+	<slack:config name="Slack_Config" doc:name="Slack Config" doc:id="4ca17f39-4067-4e4c-934b-9da5b3640036" >
+		<slack:token-connection token="xoxb-245477099365-423929912598-ZA0wdp3LeEA3fEOb7JrJDpgl" />
+	</slack:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="542f7f4f-2550-4e0e-a060-62672fc1d65d" file="${environment}.properties" />
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="34fdec0b-ad88-4afc-bb7e-558aa396622c" >
+		<db:my-sql-connection port="${mysql.port}" host="${mysql.server}" user="${mysql.user}" password="${mysql.password}" database="${mysql.database}">
+         <db:connection-properties >
+             <db:connection-property key="useSSL" value="false" />
+         </db:connection-properties>		
+		</db:my-sql-connection>
+	</db:config>
+
+</mule>
