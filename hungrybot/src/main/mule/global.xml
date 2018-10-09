@@ -1,13 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:slack="http://www.mulesoft.org/schema/mule/slack" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns="http://www.mulesoft.org/schema/mule/core" 
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-              http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd">
-              
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:slack="http://www.mulesoft.org/schema/mule/slack" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" 
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:spring="http://www.mulesoft.org/schema/mule/spring" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/email 
+http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
+http://www.mulesoft.org/schema/mule/core 
+http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db 
+http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd  
+http://www.mulesoft.org/schema/mule/http 
+http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/spring
+http://www.mulesoft.org/schema/mule/spring/current/mule-spring.xsd 
+http://www.mulesoft.org/schema/mule/slack 
+http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
+http://www.mulesoft.org/schema/mule/email 
+http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd">
+ 
+ 	<spring:config name="springConfig" files="beans.xml" doc:id="8aada40b-d95e-4ffd-9438-a8edb156d99e" />
+   <spring:security-manager>
+    <spring:delegate-security-provider name="memory-provider" delegate-ref="authenticationManager" />
+  </spring:security-manager>
+ 
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="c948b22e-8dcc-4ad6-a242-b132e7bf5360" >
+		<email:smtp-connection host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}" />
+	</email:smtp-config>              
 <!-- 	<db:config name="Database_Config" doc:name="Database Config" doc:id="328fb9f8-d982-4018-aeae-3e052ee94953">
 		<db:mssql-connection host="${mssql.server}" user="${mssql.user}" password="${mssql.password}" databaseName="${mssql.database}" port="${mssql.port}"/>
 	</db:config> -->
@@ -25,5 +47,13 @@ http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/sl
          </db:connection-properties>		
 		</db:my-sql-connection>
 	</db:config>
+	<configuration doc:name="Configuration" doc:id="cadda324-d0ab-43e6-90af-35c3b291081a" defaultErrorHandler-ref="globalErrorHandler" />
+	<http:listener-config name="HTTP_Listener_maintenance" doc:name="HTTP Listener config" doc:id="5c59dd85-5191-4976-a8a1-c14517e5921d" basePath="${maintenance.http.basepath}" >
+		<http:listener-connection host="${maintenance.http.host}" port="${maintenance.http.port}" />
+	</http:listener-config>
+	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="e1dd04ef-6cf9-4980-9893-0a06ae06983c" >
+		<sftp:connection host="${sftp.server}" username="${sftp.user}" password="${sftp.password}" port="${sftp.port}"/>
+	</sftp:config>
+<!-- 	<configuration-properties doc:name="Configuration properties" doc:id="9aa7d5c7-69fb-4f15-9c6e-6cd7c73d482b" file="languages/${language}-lang.yaml" /> -->
 
 </mule>

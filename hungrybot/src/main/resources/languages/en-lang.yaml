@@ -1,0 +1,7 @@
+slash:
+  no.vote.progress: "No vote in progress."
+  forgot.vote: "You forgot the send the number of the restaurant you want to vote for. Type /restaurants for a list of competing restaurants."
+
+api:
+  not.active: "Hungrybot not active."
+  something.wrong: "Oops something went wrong."

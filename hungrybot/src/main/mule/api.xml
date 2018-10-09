@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:os="http://www.mulesoft.org/schema/mule/os"
-	xmlns:oauth="http://www.mulesoft.org/schema/mule/oauth" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:slack="http://www.mulesoft.org/schema/mule/slack" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:oauth="http://www.mulesoft.org/schema/mule/oauth" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:slack="http://www.mulesoft.org/schema/mule/slack" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/oauth http://www.mulesoft.org/schema/mule/oauth/current/mule-oauth.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
-
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<flow name="api" doc:id="b4653183-3e1f-4e9e-99af-55842582d0fd" >
-		<http:listener doc:name="Listener" doc:id="be1200f2-9077-449f-9d0f-7c0d1975d538" config-ref="HTTP_Listener_config" path="/"/>
-		<logger level="INFO" doc:name="Logger" doc:id="b657ac65-5013-4876-8949-f9e7a28cab5b" message="#[payload]"/>
-		<flow-ref doc:name="Flow Reference" doc:id="625f169d-1788-4d84-83bf-2ee6343857f7" name="global-closedYN"/>
-		<ee:transform doc:name="Transform Message" doc:id="4134605c-4342-49ef-98c2-c5e630447634" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<http:listener doc:name="Listener" doc:id="be1200f2-9077-449f-9d0f-7c0d1975d538" config-ref="HTTP_Listener_config" path="/bot"/>
+		<flow-ref doc:name="global-closedYN" doc:id="625f169d-1788-4d84-83bf-2ee6343857f7" name="global-closedYN" target="closedYN"/>
+		<choice doc:name="Choice" doc:id="ccc64ce1-3e5d-4d4d-8959-aca87670dd8b" >
+			<when expression="#[vars.closedYN == false]">
+				<ee:transform doc:name="Transform Message" doc:id="4134605c-4342-49ef-98c2-c5e630447634">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload pluck {
@@ -25,9 +26,9 @@ payload pluck {
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="create cdm" doc:id="329ef027-a4b8-4999-bce1-acba0cd11e6a" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+				<ee:transform doc:name="create cdm" doc:id="329ef027-a4b8-4999-bce1-acba0cd11e6a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 slack: {
@@ -44,36 +45,22 @@ slack: {
 	command: (payload filter $.id == "command").name[0]
 }]]></ee:set-payload>
 			</ee:message>
-			<ee:variables >
+			<ee:variables>
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="98d5b047-c401-4f28-b0ab-9e46aa8c134f" message="#[payload]"/>
-		<choice doc:name="Choice" doc:id="575e426f-a14c-42c8-abc3-51d24bce8ebb" >
-			<when expression='#[payload.slack.command == "/list"]' >
-				<flow-ref doc:name="slash-list" doc:id="47397531-79e7-4516-8dab-1c1a3bf9c764" name="slash-list"/>
+				<flow-ref doc:name="global-slash-choices" doc:id="cb6c0ab9-00f3-40d7-9c22-3fb50ac587fb" name="global-slash-choices" />
 			</when>
-			<when expression='#[payload.slack.command == "/listall"]' >
-				<flow-ref doc:name="slash-listall" doc:id="afbd8fc5-3655-497a-8bf2-5ac8445c4aff" name="slash-listall"/>
+			<when expression="#[vars.closedYN == true]">
+				<set-payload doc:name="Hungrybot not active." doc:id="4404d508-aa93-4510-b55e-0cb675264922" value="${api.not.active}"/>
+
+			
 			</when>
-			<when expression='#[payload.slack.command == "/menu"]' >
-				<flow-ref doc:name="slash-menu" doc:id="c5504f82-2e7a-4f8e-b53e-8b2b1fbaebf1" name="slash-menu"/>
-			</when>
-			<when expression='#[payload.slack.command  == "/restaurants"]' >
-				<flow-ref doc:name="slash-restaurants" doc:id="53df0fa8-5078-45b5-a4a5-c3fef60fbe4c" name="slash-restaurants"/>
-			</when>
-			<when expression='#[payload.slack.command == "/vote"]' >
-				<flow-ref doc:name="slash-insertvote" doc:id="702f75fa-9771-4745-9d49-4159261a893a" name="slash-insertvote"/>
-			</when>
-			<when expression='#[payload.slack.command == "/order"]' >
-				<flow-ref doc:name="slash-insertorder" doc:id="8da6ad07-35c9-429f-a36d-4b8b7e5eff5b" name="slash-insertorder"/>
-			</when>
-			<otherwise >
-				<set-payload value="unknown command
-available commands are:
-/list
-/menu" doc:name="Set Payload" doc:id="1382e9e9-1793-43a1-b26b-e6845f06bfa7" />
+			<otherwise>
+				<set-payload value="${api.something.wrong}" doc:name="Set Payload" doc:id="d1dc6574-1302-4788-b032-1e3473b9bd86" />
 			</otherwise>
 		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="5000ff7e-b135-4f8a-abef-2a9d39ac7667" message="#[payload]"/>
+
 	</flow>
 
 

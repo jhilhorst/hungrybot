@@ -1,0 +1,49 @@
+{
+	"metadata": {
+		"attributes": [
+			{
+				"name": "a",
+				"value": "a"
+			},
+			{
+				"name": "a",
+				"value": "a"
+			}
+		]
+	},
+	"changetype": "update",
+    "reason": "update realname and employeeid",
+	"table": "users",
+	"columns": {
+		"keyvalue": [
+			{
+				"name": "name",
+				"value": "jhilhorst"
+			},
+			{
+				"name": "realname",
+				"value": "Jan Hilhorst"
+			},
+			{
+				"name": "employeeid",
+				"value": "3306"
+			},
+			{
+				"name": "role",
+				"value": "admin"
+			}
+		]
+	},
+	"keys": {
+		"keyvalues": [
+			{
+				"name": "userid",
+				"value": "U77BKGBKN"
+			},
+			{
+				"name": "id",
+				"value": "5"
+			}
+		]
+	}
+}

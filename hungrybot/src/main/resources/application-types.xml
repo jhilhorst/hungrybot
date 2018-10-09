@@ -5,11 +5,101 @@
       <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
 type: string]]></types:shape>
     </types:type>
+    <types:type name="json-cdm-maintenance-user" format="json">
+      <types:shape format="weave" example="examples/cdm-maintenance-user-example.json"><![CDATA[%dw 2.0
+type json_cdm_maintenance_user = {|
+  metadata: {|
+    attributes: Array<{|
+      name: String, 
+      value: String
+    |}>
+  |}, 
+  changetype: String, 
+  reason: String, 
+  table: String, 
+  columns: {|
+    keyvalue: Array<{|
+      name: String, 
+      value: String
+    |}>
+  |}, 
+  keys: {|
+    keyvalues: Array<{|
+      name: String, 
+      value: String
+    |}>
+  |}
+|} {"MetadataFormat": "json",
+"example": "{\"metadata\":{\"attributes\":[{\"name\":\"a\",\"value\":\"a\"},{\"name\":\"a\",\"value\":\"a\"}]},\"changetype\":\"update\",\"reason\":\"update realname and employeeid\",\"table\":\"users\",\"columns\":{\"keyvalue\":[{\"name\":\"name\",\"value\":\"jhilhorst\"},{\"name\":\"realname\",\"value\":\"Jan Hilhorst\"},{\"name\":\"employeeid\",\"value\":\"3306\"},{\"name\":\"role\",\"value\":\"admin\"}]},\"keys\":{\"keyvalues\":[{\"name\":\"userid\",\"value\":\"U77BKGBKN\"},{\"name\":\"id\",\"value\":\"5\"}]}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="menu-xslx" format="excel">
+      <types:shape format="weave"><![CDATA[%dw 2.0
+type menu_xslx = {|
+  Sheet1?: Array<{|
+    restaurantid?: String, 
+    item?: String, 
+    price?: Number, 
+    itemid?: Number, 
+    maintenance?: String
+  |}>
+|} {"MetadataFormat": "excel"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="json-cdm-menu" format="json">
+      <types:shape format="weave" example="examples/cmd-menu-xlsx.json"><![CDATA[%dw 2.0
+type json_cdm_menu = {|
+  metdata: {|
+    attributes: Array<{|
+      name: String, 
+      value: String
+    |}>
+  |}, 
+  menu: Array<{|
+    restaurantid: Number {"typeId": "double"}, 
+    item: String, 
+    price: Number {"typeId": "double"}, 
+    itemid: Number {"typeId": "double"}
+  |}>
+|} {"MetadataFormat": "json",
+"example": "{\"metdata\":{\"attributes\":[{\"name\":\"menu\",\"value\":\"upload\"}]},\"menu\":[{\"restaurantid\":7.0,\"item\":\"Omelet\",\"price\":3.45,\"itemid\":1.0},{\"restaurantid\":7.0,\"item\":\"Broodje filet American wit\",\"price\":3.5,\"itemid\":2.0},{\"restaurantid\":7.0,\"item\":\"Broodje filet American bruin\",\"price\":3.5,\"itemid\":3.0},{\"restaurantid\":7.0,\"item\":\"Broodje hamburger\",\"price\":5.55,\"itemid\":4.0},{\"restaurantid\":7.0,\"item\":\"Broodje gezond\",\"price\":4.45,\"itemid\":5.0},{\"restaurantid\":7.0,\"item\":\"Nasi goreng\",\"price\":6.45,\"itemid\":6.0},{\"restaurantid\":7.0,\"item\":\"Shoarma schotel\",\"price\":7.1,\"itemid\":7.0},{\"restaurantid\":7.0,\"item\":\"broodje kaas hard\",\"price\":3.65,\"itemid\":8.0},{\"restaurantid\":7.0,\"item\":\"broodje ei gebakken\",\"price\":4.5,\"itemid\":9.0},{\"restaurantid\":7.0,\"item\":\"broodje ei gekookt\",\"price\":4.5,\"itemid\":10.0},{\"restaurantid\":7.0,\"item\":\"bao pao varken\",\"price\":2.5,\"itemid\":11.0},{\"restaurantid\":7.0,\"item\":\"Broodje kaas zacht\",\"price\":3.5,\"itemid\":12.0},{\"restaurantid\":7.0,\"item\":\"Broodje worst\",\"price\":2.65,\"itemid\":13.0},{\"restaurantid\":7.0,\"item\":\"Broodje hete kip\",\"price\":8.45,\"itemid\":14.0},{\"restaurantid\":7.0,\"item\":\"Nasi schijf\",\"price\":2.55,\"itemid\":15.0},{\"restaurantid\":7.0,\"item\":\"Bamibal\",\"price\":2.55,\"itemid\":16.0},{\"restaurantid\":7.0,\"item\":\"Halve kip\",\"price\":4.5,\"itemid\":17.0},{\"restaurantid\":7.0,\"item\":\"Broodje tartaar speciaal\",\"price\":4.55,\"itemid\":18.0},{\"restaurantid\":7.0,\"item\":\"Broodje salami\",\"price\":3.55,\"itemid\":19.0},{\"restaurantid\":7.0,\"item\":\"Broodje eiersalade\",\"price\":3.55,\"itemid\":20.0},{\"restaurantid\":6.0,\"item\":\"Omelet\",\"price\":3.45,\"itemid\":1.0},{\"restaurantid\":6.0,\"item\":\"Broodje filet American wit\",\"price\":3.5,\"itemid\":2.0},{\"restaurantid\":6.0,\"item\":\"Broodje filet American bruin\",\"price\":3.5,\"itemid\":3.0},{\"restaurantid\":6.0,\"item\":\"Broodje hamburger\",\"price\":5.55,\"itemid\":4.0},{\"restaurantid\":6.0,\"item\":\"Broodje gezond\",\"price\":4.45,\"itemid\":5.0},{\"restaurantid\":6.0,\"item\":\"Nasi goreng\",\"price\":6.45,\"itemid\":6.0},{\"restaurantid\":6.0,\"item\":\"Shoarma schotel\",\"price\":7.1,\"itemid\":7.0},{\"restaurantid\":6.0,\"item\":\"broodje kaas hard\",\"price\":3.65,\"itemid\":8.0},{\"restaurantid\":6.0,\"item\":\"broodje ei gebakken\",\"price\":4.5,\"itemid\":9.0},{\"restaurantid\":6.0,\"item\":\"broodje ei gekookt\",\"price\":4.5,\"itemid\":10.0},{\"restaurantid\":6.0,\"item\":\"bao pao varken\",\"price\":2.5,\"itemid\":11.0},{\"restaurantid\":6.0,\"item\":\"Broodje kaas zacht\",\"price\":3.5,\"itemid\":12.0},{\"restaurantid\":6.0,\"item\":\"Broodje worst\",\"price\":2.65,\"itemid\":13.0},{\"restaurantid\":6.0,\"item\":\"Broodje hete kip\",\"price\":8.45,\"itemid\":14.0},{\"restaurantid\":6.0,\"item\":\"Nasi schijf\",\"price\":2.55,\"itemid\":15.0},{\"restaurantid\":6.0,\"item\":\"Bamibal\",\"price\":2.55,\"itemid\":16.0},{\"restaurantid\":6.0,\"item\":\"Halve kip\",\"price\":4.5,\"itemid\":17.0},{\"restaurantid\":6.0,\"item\":\"Broodje tartaar speciaal\",\"price\":4.55,\"itemid\":18.0},{\"restaurantid\":6.0,\"item\":\"Broodje salami\",\"price\":3.55,\"itemid\":19.0},{\"restaurantid\":6.0,\"item\":\"Broodje eiersalade\",\"price\":3.55,\"itemid\":20.0}]}"}
+
+]]></types:shape>
+    </types:type>
   </types:catalog>
   <types:enrichment select="#329ef027-a4b8-4999-bce1-acba0cd11e6a">
     <types:processor-declaration/>
   </types:enrichment>
   <types:enrichment select="#4134605c-4342-49ef-98c2-c5e630447634">
     <types:processor-declaration/>
+  </types:enrichment>
+  <types:enrichment select="#4133b7d0-19a7-4b6f-911e-a0cad704c0d6">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="json-cdm-maintenance-user"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#cbfaf334-5428-4df9-80b2-43f8a9ce530e">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="menu-xslx"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#23df60f9-9680-4c7f-b991-afbd4f9c3c13">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="json-cdm-menu"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
   </types:enrichment>
 </types:mule>

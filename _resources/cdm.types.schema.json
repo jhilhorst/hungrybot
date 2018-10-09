@@ -1,0 +1,32 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"description": "Type definitions",
+	"definitions": {
+		"countryCode": {
+			"type": "string",
+			"pattern": "^[A-Z]{2}$"
+		},
+		"languageCode": {
+			"type": "string",
+			"pattern": "^[a-z]{2}$"
+		},
+		"dateTime": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"changeTypes": {
+			"description": "Type of change",
+			"type": "string",
+			"enum": [
+				"update",
+				"delete",
+				"insert"
+			]
+		},
+		"currency": {
+			"description": "Currency codes",
+			"type": "string",
+			"pattern": "^[A-Z]{3}$"
+		}
+	}
+}

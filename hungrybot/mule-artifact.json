@@ -1,3 +1,11 @@
 {
+	"configs":[
+		"global-flows.xml",
+		"global.xml",
+		"schedulers.xml",
+		"api.xml",
+		"slash-responses.xml",
+		"maintenance/maintenance-api.xml"
+	],
   "minMuleVersion": "4.1.3"
 }

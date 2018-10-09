@@ -1,11 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+
+	<flow name="global-slash-choices" doc:id="0f9e2f5d-9556-40c9-98c8-c82999b8d82b">
+		<choice doc:name="Choice" doc:id="60974b79-3cff-4815-98db-09b4ea9dfa3e" >
+			<when expression='#[payload.slack.command == "/list"]' >
+				<flow-ref doc:name="slash-list" doc:id="e9eaf12f-b742-4243-ad51-4e84bd0e79b6" name="slash-list"/>
+			</when>
+			<when expression='#[payload.slack.command == "/listall"]' >
+				<flow-ref doc:name="slash-listall" doc:id="b0c1440c-e364-4fcc-b436-63606650a101" name="slash-listall"/>
+			</when>
+			<when expression='#[payload.slack.command == "/menu"]' >
+				<flow-ref doc:name="slash-menu" doc:id="0a11a809-c97f-47a0-9da8-340a02d1beca" name="slash-menu"/>
+			</when>
+			<when expression='#[payload.slack.command  == "/restaurants"]' >
+				<flow-ref doc:name="slash-restaurants" doc:id="b4f831c0-6c44-4c14-b0d1-1c75b8b6642b" name="slash-restaurants"/>
+			</when>
+			<when expression='#[payload.slack.command == "/vote"]' >
+				<flow-ref doc:name="slash-insertvote" doc:id="e2cf56d6-6573-4e3a-9ace-2f1b46f492d3" name="slash-insertvote"/>
+			</when>
+			<when expression='#[payload.slack.command == "/order"]' >
+				<flow-ref doc:name="slash-insertorder" doc:id="dc7c8776-db57-4bd9-a8b5-c1dc10b6f9e3" name="slash-insertorder"/>
+			</when>
+			<otherwise >
+				<set-payload value="unknown command
+				available commands are:
+				/list
+				/menu" doc:name="Set Payload" doc:id="1e873e39-f858-4b23-9881-facca3e8ffb0" />
+			</otherwise>
+		</choice>	
+	</flow>
 	<flow name="global-checkUserExist" doc:id="b032c4c0-fed7-4c9e-b7c8-d4faf4274871" >
 		<db:select doc:name="Select" doc:id="7593a959-b9bc-48c9-bf32-e0f0944b18dd" config-ref="Database_Config" target="userexist">
 			<db:sql >select * from users where userid = :userid</db:sql>
@@ -44,10 +75,128 @@ values( :userid, :name);</db:sql>
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
-if (payload[0].closed == 0 )'n' else 'y'
+if (payload[0].closed == 0 ) false else true as Boolean
 
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 	</flow>
+	<flow name="global-prepare-order" doc:id="f60b9133-84c3-46e2-99d1-1404af5db0fc" >
+		<scheduler doc:name="Scheduler" doc:id="4a63c5ac-dfd3-4437-be30-17f7b1b02a8f" >
+			<scheduling-strategy >
+				<cron expression="${hungrybot.finished.cron}" />
+			</scheduling-strategy>
+		</scheduler>
+		<db:select doc:name="Get last order" doc:id="1fab8562-ddfd-4aa4-bfed-ef69c28713d9" config-ref="Database_Config" target="order">
+			<db:sql >select 
+count(orders.itemid) as &quot;count&quot;,
+orders.itemname ,
+menu.price,
+menu.price * count(orders.itemid) totalitem,
+users.name as &quot;username&quot;,
+restaurants.name as &quot;restaurant&quot;,
+orders.voteid ,
+(select active.date from active where active.id = (select max(id) from active) ) as &quot;orderdate&quot;
+from 
+orders,
+users,
+restaurants,
+menu
+where
+orders.voteid = (select max(id) from active) 
+and users.userid = orders.userid
+and orders.restaurantid = restaurants.id
+and orders.itemid = menu.itemid
+and orders.restaurantid = menu.restaurantid
+group by orders.itemname,users.name,restaurants.name,menu.price,orders.voteid
+order by users.name</db:sql>
+		</db:select>
+		<ee:transform doc:name="Create excel / create body" doc:id="1f105877-c4b1-4bbe-bea1-0ab6f544fef2" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="orderxslx" ><![CDATA[%dw 2.0
+//output application/xlsx header=true
+output application/json
+---
+{
+	Sheet1: vars.order map (order, orderindex) -> {	 
+		restaurant: order.restaurant,
+		username: order.username,
+		itemname: order.itemname,
+		count: order.count,
+		price: order.price ,
+		totalprice: order.totalitem,
+		voteid: order.voteid,
+		orderdate: order.orderdate as Date
+	
+  }
+}]]></ee:set-variable>
+				<ee:set-variable variableName="emailbody" ><![CDATA[%dw 2.0
+output application/xml
+---
+ html: {
+ 	h1: 'Order for ' ++ vars.order.restaurant[0],
+ 	h3: 'Date ' ++ (vars.order.orderdate[0] as Date),
+ 	h5: 'Total order price ' ++ (sum(vars.order.price)),
+  table: { tr: {	
+	th: 'Restaurant',
+	th: 'Username',
+	th: 'Itemname',
+	th: 'Count',
+	th: 'Price' ,
+	th: 'Totalitems',
+	th: 'Voteid',
+	th: 'Date'
+	
+	}, tr: vars.order map (order, orderindex) -> {	
+	td: order.restaurant,
+	td: order.username,
+	td: order.itemname,
+	td:  order.count,
+	td: order.price ,
+	td: order.totalitem,
+	td: order.voteid,
+	td: order.orderdate as Date	
+     } 
+ },
+ h4: 'See attached spreadsheet '
+
+}
+
+
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="06851f4c-879f-4aa2-9c0d-0346046d9d4f" message="#[payload]" />
+		<db:select doc:name="Select" doc:id="6714be99-85f4-4cad-9c5e-dc7ffd813832" config-ref="Database_Config" target="sendto">
+			<db:sql >select
+realname,
+email
+from
+users
+where 
+role in ('ROLE_FINANCE','ROLE_ADMIN')</db:sql>
+		</db:select>
+		<email:send doc:name="Send" doc:id="361aa1bd-1732-44d7-a5c8-86b2ca5d1545" config-ref="Email_SMTP" fromAddress="${smtp.from.address}" subject="Test">
+			<email:to-addresses>
+				<email:to-address value="${smtp.to.address}" />
+			</email:to-addresses>
+			<email:body contentType="text/html">
+				<email:content><![CDATA[#[vars.emailbody]]]></email:content>
+			</email:body>
+			<email:attachments><![CDATA[#[{
+         ('Order-' ++ 'ID' ++ vars.orderxslx.Sheet1[0].voteid ++ "-" ++ now() as Date  ++ '.xlsx') : vars.orderxslx
+}]]]></email:attachments>
+		</email:send>
+	</flow>
+	<error-handler name="globalErrorHandler" doc:id="5a19ec92-4200-407b-8317-d152cb9c0fb8" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e8f1128e-ea17-46ce-aeff-94fefec4f8f3" type="NOT_PERMITTED">
+			<logger level="INFO" doc:name="Logger" doc:id="f921b934-b391-4a42-b9c8-aea5612cdf4e" message="#[payload]"/>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8f36b584-5df4-4569-a705-25efef8a98fc" type="ANY" >
+			<set-payload value="#[payload]" doc:name="Set Payload" doc:id="62728ed4-00ea-4826-9276-7afc4f0ee0c7" />
+			<logger level="INFO" doc:name="Logger" doc:id="1544d310-53ab-4263-a61c-9a6af522328e" message="#[payload]" />
+		</on-error-propagate>
+	</error-handler>
 </mule>

@@ -6,8 +6,12 @@
     "6156cfbe-4acf-4126-b2d3-af6343d543da": {
       "payload": "sample_data/list__8.dwl"
     },
-    "fa35e11f-b95b-407d-8135-e4a6a712748b": {
-      "payload": "sample_data/list__2.dwl"
+    "cbfaf334-5428-4df9-80b2-43f8a9ce530e": {
+      "payload": "sample_data/unknown_1.xlsx",
+      "attributes": "sample_data/SftpFileAttributes.dwl"
+    },
+    "1f105877-c4b1-4bbe-bea1-0ab6f544fef2": {
+      "vars-order": "sample_data/list__10.dwl"
     },
     "655d0699-7623-4c15-823b-74344ac21c2a": {
       "payload": "sample_data/list_unknown.flatfile",
@@ -20,17 +24,30 @@
       "payload": "sample_data/unknown_4.dwl",
       "vars-selecteditem": "sample_data/list__5.dwl"
     },
-    "679f097e-7e5e-4a14-88e9-9b0699939a49": {
-      "payload": "sample_data/list__9.dwl"
-    },
     "51d8beae-9520-4805-81b6-fdcb422a37e5": {
       "payload": "sample_data/unknown_1.json"
     },
-    "329ef027-a4b8-4999-bce1-acba0cd11e6a": {
-      "payload": "sample_data/unknown.json"
+    "679f097e-7e5e-4a14-88e9-9b0699939a49": {
+      "payload": "sample_data/list__9.dwl"
+    },
+    "95b0877b-e19e-45b3-9f30-b140b2e7cd15": {
+      "vars-order": "sample_data/list__12.dwl",
+      "vars-orderxslx": "sample_data/unknown_7.dwl"
     },
     "5e1c9ec7-893d-4e37-ab25-a390993a893f": {
       "payload": "sample_data/list__7.dwl"
+    },
+    "4133b7d0-19a7-4b6f-911e-a0cad704c0d6": {
+      "attributes": "sample_data/HttpRequestAttributes.dwl"
+    },
+    "fa35e11f-b95b-407d-8135-e4a6a712748b": {
+      "payload": "sample_data/list__2.dwl"
+    },
+    "156e863e-b8cb-46d5-a24c-5cc2571f7abd": {
+      "vars-order": "sample_data/list__11.dwl"
+    },
+    "329ef027-a4b8-4999-bce1-acba0cd11e6a": {
+      "payload": "sample_data/unknown.json"
     },
     "24bb1e8e-833d-4b34-9ff0-24161d22e46f": {
       "vars-menu": "sample_data/list__4.dwl"

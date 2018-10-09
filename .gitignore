@@ -1,3 +1,5 @@
 .metadata/
 .mule/plugins-tmp/
 .tooling/
+.tooling-apps-cache/
+hungrybot/src/test/

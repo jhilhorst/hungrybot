@@ -45,7 +45,8 @@ users
 where
 orders.voteid = (select max(id) from active) 
 and users.userid = orders.userid
-group by orders.itemname,users.name</db:sql>
+group by orders.itemname,users.name
+order by users.name</db:sql>
 		</db:select>
 		<ee:transform doc:name="Response list all" doc:id="6156cfbe-4acf-4126-b2d3-af6343d543da" >
 			<ee:message >
@@ -99,7 +100,7 @@ output application/flatfile schemaPath = "flatfiles/restaurants.ffd"
 		</ee:transform>
 	</flow>
 	<flow name="slash-insertvote" doc:id="603f6c7a-a18a-4313-a513-cf3ce022b612" >
-		<flow-ref doc:name="Flow Reference" doc:id="8fc11e0c-cfdf-40d2-bd4c-e96ec13ff489" name="global-checkUserExist"/>
+		<flow-ref doc:name="global-checkUserExist" doc:id="8fc11e0c-cfdf-40d2-bd4c-e96ec13ff489" name="global-checkUserExist"/>
 		<db:select doc:name="Select Votes" doc:id="4c7c3595-0005-4bfb-b802-31f1444de837" config-ref="Database_Config" target="votecheck">
 			<db:sql >select 
 active.date as actdate,
@@ -135,10 +136,10 @@ ORDER BY active.id DESC LIMIT 1</db:sql>
 		</db:select>
 		<choice doc:name="Choice" doc:id="56f9ca33-666c-4a95-b8b7-0deefe04d6dd" >
 		<when expression="#[vars.votecheck[0].active != 'y']">
-			<set-payload value="No vote in progress." doc:name="no active vote" doc:id="5cf579f0-7b37-47c6-bfda-26f7a59066e2" />
+			<set-payload value="${slash.no.vote.progress}" doc:name="no active vote" doc:id="5cf579f0-7b37-47c6-bfda-26f7a59066e2" />
 		</when>
 		<when expression='#[payload.slack.text == "" ]'>
-			<set-payload value="You forgot the send the number of the restaurant you want to vote for. Type /restaurants for a list of competing restaurants." doc:name="Empty vote" doc:id="ced93025-ff56-4e19-ad16-0e3780d1efc7" />
+			<set-payload value="${slash.forgot.vote}" doc:name="Empty vote" doc:id="ced93025-ff56-4e19-ad16-0e3780d1efc7" />
 		</when>
 			<when expression="#[vars.votecheck.user != null]">
 				<db:update doc:name="Update" doc:id="2a3d3623-e71c-4147-9c55-7a677b6ff8af" config-ref="Database_Config">
@@ -181,7 +182,7 @@ values(
 		</choice>
 	</flow>
 	<flow name="slash-insertorder" doc:id="58252959-18a9-4834-9bb2-c3958d63ca60" >
-		<flow-ref doc:name="Flow Reference" doc:id="4abaad9f-d722-4886-ac34-ef147710722a" name="global-checkUserExist" />
+		<flow-ref doc:name="global-checkUserExist" doc:id="4abaad9f-d722-4886-ac34-ef147710722a" name="global-checkUserExist" />
 		<db:select doc:name="Select menu item" doc:id="c2b456b6-8994-41fc-b9e5-7d39d2d29edc" config-ref="Database_Config" target="selecteditem">
 			<db:sql >select 
 users.userid,
@@ -200,7 +201,8 @@ and menu.restaurantid = restaurants.id
 and votes.voteid = (select max(id) from active)
 and votes.userid = users.userid
 and users.userid= :userid
-and menu.itemid = :itemid</db:sql>
+and menu.itemid = :itemid
+and menu.lastchange = (select max(lastchange) from menu)</db:sql>
 			<db:input-parameters ><![CDATA[#[{
 'userid' : payload.slack.user_id,
 'name' : payload.slack.user_name,

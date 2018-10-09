@@ -100,7 +100,7 @@ Use /menu for the menulist of the restaurant that won.]]></slack:message>
 		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="3392c4f0-bd7c-4a17-bb22-c08e959bbf11" config-ref="Slack_Config">
 			<slack:message ><![CDATA[Time out: No more orders can be placed]]></slack:message>
 		</slack:post-message>
-		<db:update doc:name="Update" doc:id="2c3b6812-848d-4a19-be8b-15558af77d8c" config-ref="Database_Config">
+		<db:update doc:name="Close session" doc:id="2c3b6812-848d-4a19-be8b-15558af77d8c" config-ref="Database_Config">
 			<db:sql >update active
 SET closed = 1
 where date =  :date
@@ -110,6 +110,7 @@ and type = :type</db:sql>
 'date' : now() as Date
 }]]]></db:input-parameters>
 		</db:update>
+		<flow-ref doc:name="global-prepare-order" doc:id="6e86c361-3f09-4db8-a373-3fe7862e6c7a" name="global-prepare-order" />
 	</flow>
 	
 	

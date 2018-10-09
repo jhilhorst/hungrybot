@@ -2,5 +2,5 @@
 output application/java
 ---
 [{
-	closed: 0
+	closed: 1
 }]

@@ -1,0 +1,76 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"description": "Comment describing your JSON Schema",
+	"additionalProperties": false,
+	"definitions": {
+		"insertmenu": {
+			"description": "insert menu items",
+			"type": "object",
+			"properties": {
+				"metadata": {
+					"$ref": "cdm-entities-schema.json#/definitions/metadata"
+				},
+				"menu": {
+					"type": "array",
+					"items": {
+						"id": "menu",
+						"title": "menu",
+						"type": "object",
+						"properties": {
+							"restaurantid": {
+								"type": "number"
+							},
+							"item": {
+								"type": "string"
+							},
+							"price": {
+								"type": "number"
+							},
+							"itemid": {
+								"type": "number"
+							}
+						},
+						"additionalProperties": false
+					}
+				}
+			},
+			"additionalProperties": false
+		},
+		"maintainTable": {
+			"description": "maintain table",
+			"type": "object",
+			"properties": {
+				"metadata": {
+					"$ref": "cdm-entities-schema.json#/definitions/metadata"
+				},
+				"changetype": {
+					"$ref": "cdm.types.schema.json#/definitions/changeTypes"
+				},
+				"reason": {
+					"type": "string"
+				},
+				"table": {
+					"type": "string"
+				},
+				"columns": {
+					"$ref": "cdm-entities-schema.json#/definitions/columns"
+				},
+				"keys": {
+					"$ref": "cdm-entities-schema.json#/definitions/keys"
+				}
+			},
+			"required": [
+				"changetype",
+				"reason",
+				"table",
+				"keys"
+			],
+			"dependencies": {
+				"metadata": [
+					"columns"
+				]
+			},
+			"additionalProperties": false
+		}
+	}
+}

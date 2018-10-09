@@ -1,0 +1,74 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"description": "Entity definitions",
+	"definitions": {
+		"metadata": {
+			"description": "The message metadata",
+			"type": "object",
+			"properties": {
+				"attributes": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/attribute"
+					}
+				}
+			}
+		},
+		"attribute": {
+			"description": "Additional attributes",
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"value": {
+					"type": [
+						"string",
+						"number",
+						"boolean"
+					]
+				}
+			}
+		},
+		"keyvalue": {
+			"description": "Key value pairs",
+			"type": "object",
+			"properties": {
+				"name": {
+					"type": "string"
+				},
+				"value": {
+					"type": [
+						"string",
+						"number",
+						"boolean"
+					]
+				}
+			}
+		},
+		"keys": {
+			"description": "key values",
+			"type": "object",
+			"properties": {
+				"keyvalues": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/keyvalue"
+					}
+				}
+			}
+		},
+		"columns": {
+			"description": "Columns and values",
+			"type": "object",
+			"properties": {
+				"keyvalue": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/keyvalue"
+					}
+				}
+			}
+		}
+	}
+}
