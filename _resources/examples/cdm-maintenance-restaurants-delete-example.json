@@ -1,0 +1,68 @@
+{
+	"metadata": {
+		"attributes": [
+			{
+				"name": "type",
+				"value": "delete restaurant only"
+			}
+		]
+	},
+	"changetype": "delete",
+    "reason": "delete restaurant only",
+/*	"changetype": "deleteall",
+    "reason": "delete restaurant and menu",
+*/
+	"table": "restaurants",
+	"columns": {
+		"keyvalue": [
+			{
+				"name": "type",
+				"value": "nederlands"
+			},
+			{
+				"name": "name",
+				"value": "ritz"
+			},
+			{
+				"name": "telephone",
+				"value": "08556485652"
+			},
+			{
+				"name": "street",
+				"value": "street"
+			},
+			{
+				"name": "housenumber",
+				"value": "23"
+			},
+			{
+				"name": "city",
+				"value": "tilburg"
+			},
+			{
+				"name": "menulocation",
+				"value": "file"
+			},
+			{
+				"name": "contact",
+				"value": "joop"
+			},
+			{
+				"name": "email",
+				"value": "jhilhorst@datacon.nl"
+			},
+			{
+				"name": "ordering",
+				"value": "telephone"
+			}
+		]
+	},
+	"keys": {
+		"keyvalue": [
+			{
+				"name": "id",
+				"value": "6"
+			}
+		]
+	}
+}

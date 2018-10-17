@@ -40,6 +40,8 @@ http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sft
 		<slack:token-connection token="xoxb-245477099365-423929912598-ZA0wdp3LeEA3fEOb7JrJDpgl" />
 	</slack:config>
 	<configuration-properties doc:name="Configuration properties" doc:id="542f7f4f-2550-4e0e-a060-62672fc1d65d" file="${environment}.properties" />
+	<configuration-properties doc:name="!!! Delete in production !!!" doc:id="ed9ff991-7445-4a3c-a280-f6ba411a5d2b" file="languages/en-lang.yaml" />
+	<!-- 	<configuration-properties doc:name="Configuration properties" doc:id="56c95ae1-6a5a-43f5-b303-f602978c4494" file="languages/${language}-lang.yaml" /> -->
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="34fdec0b-ad88-4afc-bb7e-558aa396622c" >
 		<db:my-sql-connection port="${mysql.port}" host="${mysql.server}" user="${mysql.user}" password="${mysql.password}" database="${mysql.database}">
          <db:connection-properties >
@@ -54,6 +56,7 @@ http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sft
 	<sftp:config name="SFTP_Config" doc:name="SFTP Config" doc:id="e1dd04ef-6cf9-4980-9893-0a06ae06983c" >
 		<sftp:connection host="${sftp.server}" username="${sftp.user}" password="${sftp.password}" port="${sftp.port}"/>
 	</sftp:config>
-<!-- 	<configuration-properties doc:name="Configuration properties" doc:id="9aa7d5c7-69fb-4f15-9c6e-6cd7c73d482b" file="languages/${language}-lang.yaml" /> -->
+
+
 
 </mule>

@@ -50,7 +50,7 @@
 			"description": "key values",
 			"type": "object",
 			"properties": {
-				"keyvalues": {
+				"keyvalue": {
 					"type": "array",
 					"items": {
 						"$ref": "#/definitions/keyvalue"

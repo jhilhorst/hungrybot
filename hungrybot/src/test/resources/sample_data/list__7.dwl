@@ -3,9 +3,11 @@ output application/java
 ---
 [{
 	count: 2,
-	itemname: "????"
+	itemname: "????",
+	itemid: 15
 },
 {
 	count: 1,
-	itemname: "????"
+	itemname: "????",
+	itemid: 15
 }]

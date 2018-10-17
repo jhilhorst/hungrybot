@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	<flow name="maintenance-restaurant-insert" doc:id="8ef211b6-0390-4321-9e26-f27451ce9834" >
+		<db:insert doc:name="Insert restaurant " doc:id="af121739-3298-440e-ab8b-91910e96e4f8" config-ref="Database_Config">
+			<db:sql >insert into restaurants
+(type,name,telephone,street,housenumber,city,menulocation,contact,ordering,email)
+VALUES( :type, :name, :telephone, :street, :housenumber, :city, :menulocation, :contact,: ordering, :email)
+</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+  'id' :  payload.keys.keyvalue[?($.name == "id")][0].value,
+  'type' : payload.columns.keyvalue[?($.name == "type")][0].value,
+  'name' : payload.columns.keyvalue[?($.name == "name")][0].value,
+  'telephone' : payload.columns.keyvalue[?($.name == "telephone")][0].value,
+  'street' : payload.columns.keyvalue[?($.name == "street")][0].value,
+  'housenumber' : payload.columns.keyvalue[?($.name == "housenumber")][0].value,
+  'city' : payload.columns.keyvalue[?($.name == "city")][0].value,
+  'menulocation' : payload.columns.keyvalue[?($.name == "menulocation")][0].value,
+  'contact' : payload.columns.keyvalue[?($.name == "contact")][0].value,
+  'email' : payload.columns.keyvalue[?($.name == "email")][0].value,
+  'ordering' : payload.columns.keyvalue[?($.name == "ordering")][0].value
+}]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="a2c303d7-9398-432d-ae18-2597c58e3aa5" message="#[payload]"/>
+		<set-payload value="Restaurant inserted" doc:name="Set Payload" doc:id="18f331a1-372d-4117-85e0-17caea753a4b" />
+	</flow>
+	<flow name="maintenance-restaurant-update" doc:id="3da1c649-4d8c-4fa3-8951-1e231328407a" >
+		<db:update doc:name="Update restaurant" doc:id="5ab197a3-5592-409f-97ef-7155280fdba5" config-ref="Database_Config">
+			<db:sql >update  restaurants
+SET 
+type = :type,
+name = :name,
+telephone = :telephone,
+street = :street,
+housenumber = :housenumber ,
+city = :city ,
+menulocation = :menulocation ,
+contact = :contact ,
+ordering = :ordering,
+email = :email
+where
+id = :id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+  'id' :  payload.keys.keyvalue[?($.name == "id")][0].value,
+  'type' : payload.columns.keyvalue[?($.name == "type")][0].value,
+  'name' : payload.columns.keyvalue[?($.name == "name")][0].value,
+  'telephone' : payload.columns.keyvalue[?($.name == "telephone")][0].value,
+  'street' : payload.columns.keyvalue[?($.name == "street")][0].value,
+  'housenumber' : payload.columns.keyvalue[?($.name == "housenumber")][0].value,
+  'city' : payload.columns.keyvalue[?($.name == "city")][0].value,
+  'menulocation' : payload.columns.keyvalue[?($.name == "menulocation")][0].value,
+  'contact' : payload.columns.keyvalue[?($.name == "contact")][0].value,
+  'email' : payload.columns.keyvalue[?($.name == "email")][0].value,
+  'ordering' : payload.columns.keyvalue[?($.name == "ordering")][0].value
+}]]]></db:input-parameters>
+		</db:update>
+		<logger level="INFO" doc:name="Logger" doc:id="05d8304a-26e0-47ca-99e2-4bf6a3307f44" message="#[payload]"/>
+		<set-payload value="Update restaurant succesfull." doc:name="Set Payload" doc:id="de9268e7-487e-48c7-977f-6ece5793aeba" />
+	</flow>
+	<flow name="maintenance-restaurant-delete" doc:id="8cd9a78f-1cc9-4e07-87c7-a59b88c6c296" >
+		<db:delete doc:name="Delete restaurant " doc:id="38c743af-8ce4-4cd0-a765-2f31d278c258" config-ref="Database_Config">
+			<db:sql >delete from restaurants
+where
+restaurants.id = :id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+  'id' :  payload.keys.keyvalue[?($.name == "id")][0].value
+}]]]></db:input-parameters>
+		</db:delete>
+		<logger level="INFO" doc:name="Logger" doc:id="15c65f3d-83a3-497b-a49a-d1d169c6db00" message="#[payload]"/>
+		<set-payload value="${maintenance.restaurant.deleted}" doc:name="Set Payload" doc:id="4a87f4a2-df0c-451f-ad08-8d086a4236a2" />
+	</flow>	
+	
+</mule>

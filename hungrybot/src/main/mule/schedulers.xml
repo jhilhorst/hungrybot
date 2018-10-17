@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
 	xmlns:slack="http://www.mulesoft.org/schema/mule/slack"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/slack http://www.mulesoft.org/schema/mule/slack/current/mule-slack.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
@@ -35,9 +37,9 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="9eb87f23-3938-4499-91a8-b5941d80abe8" config-ref="Slack_Config">
-			<slack:message ><![CDATA[Time to start voting.
-Type /restaurants for a list of competing restaurants.
-After that type /vote with the number of the restaurant.]]></slack:message>
+			<slack:message ><![CDATA[${scheduler.start.vote}
+${scheduler.start.vote.tip1}
+${scheduler.start.vote.tip2}]]></slack:message>
 		</slack:post-message>
 	
 </flow>
@@ -61,7 +63,7 @@ group by votes.vote
 order by vote DESC LIMIT 1;</db:sql>
 		</db:select>
 		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat -Winner" doc:id="338a1810-363b-47fb-9554-a6f784bbf827" config-ref="Slack_Config">
-			<slack:message><![CDATA[#['Vote Ended. The winner is "' ++ vars.winner[0][0] ++ '"']]]></slack:message>
+			<slack:message><![CDATA[#[p('scheduler.end.vote.winner') ++ " " ++ vars.winner[0][0] ]]]></slack:message>
 		</slack:post-message>
 		<db:update doc:name="update winner to active" doc:id="6629b591-95ec-4fff-9bca-0e889245bd9c" config-ref="Database_Config">
 			<db:sql>update active
@@ -77,8 +79,8 @@ and type = :type</db:sql>
 }]]]></db:input-parameters>
 		</db:update>
 		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="b46e7790-80f3-46d8-a497-ce7159786637" config-ref="Slack_Config">
-			<slack:message ><![CDATA[So start ordering:
-Use /menu for the menulist of the restaurant that won.]]></slack:message>
+			<slack:message ><![CDATA[${scheduler.end.vote.ordering}
+${scheduler.end.vote.ordering.tip1}]]></slack:message>
 		</slack:post-message>
 	</flow>
 	<flow name="schedulers-almost-finished" doc:id="1394e542-0e35-43f4-a1ae-3944214d6e5c" >
@@ -88,7 +90,7 @@ Use /menu for the menulist of the restaurant that won.]]></slack:message>
 			</scheduling-strategy>
 		</scheduler>
 		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="08ebbffb-ebe6-4b9e-9f92-49ffff64548e" config-ref="Slack_Config">
-			<slack:message ><![CDATA[Attention: 15 minutes left to place your order.]]></slack:message>
+			<slack:message ><![CDATA[${scheduler.order.reminder}]]></slack:message>
 		</slack:post-message>
 	</flow>
 	<flow name="schedulers-finished" doc:id="1c644b91-0d1d-44f1-8256-1100cda6e09e" >
@@ -98,7 +100,7 @@ Use /menu for the menulist of the restaurant that won.]]></slack:message>
 			</scheduling-strategy>
 		</scheduler>
 		<slack:post-message channel="${hungrybot.channel}" doc:name="Chat - Post Message" doc:id="3392c4f0-bd7c-4a17-bb22-c08e959bbf11" config-ref="Slack_Config">
-			<slack:message ><![CDATA[Time out: No more orders can be placed]]></slack:message>
+			<slack:message ><![CDATA[${scheduler.order.finished}]]></slack:message>
 		</slack:post-message>
 		<db:update doc:name="Close session" doc:id="2c3b6812-848d-4a19-be8b-15558af77d8c" config-ref="Database_Config">
 			<db:sql >update active
@@ -110,8 +112,8 @@ and type = :type</db:sql>
 'date' : now() as Date
 }]]]></db:input-parameters>
 		</db:update>
-		<flow-ref doc:name="global-prepare-order" doc:id="6e86c361-3f09-4db8-a373-3fe7862e6c7a" name="global-prepare-order" />
+		<flow-ref doc:name="global-send-order" doc:id="6e86c361-3f09-4db8-a373-3fe7862e6c7a" name="global-send-order" />
 	</flow>
-	
+
 	
 </mule>

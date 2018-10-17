@@ -5,7 +5,10 @@
 		"schedulers.xml",
 		"api.xml",
 		"slash-responses.xml",
-		"maintenance/maintenance-api.xml"
+		"maintenance/maintenance-api.xml",
+		"maintenance/maintenance-menu.xml",
+		"maintenance/maintenance-restaurant.xml",
+		"maintenance/maintenance-user.xml"		
 	],
   "minMuleVersion": "4.1.3"
 }

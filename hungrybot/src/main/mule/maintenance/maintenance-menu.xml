@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<flow name="maintenance-menu-bulk-insert" doc:id="92b0fbbe-27ff-48ff-bbea-9911272688e4" >
+		<ee:transform doc:name="CDM to Insert" doc:id="6a236975-c89e-4cc4-9717-670e5eb5a695" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.menu map (insert,insertindex) -> {
+	  "restaurantid": insert.restaurantid as Number,
+      "item": insert.item as String,
+      "price": insert.price as Number,
+      "itemid": insert.itemid as Number,
+      "lastchange": now() as DateTime {format: "Y-M-dd HH:mm:ss"}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-insert doc:name="Bulk insert" doc:id="7a19e36c-5a33-42b3-a814-0d086cf7db42" config-ref="Database_Config">
+			<db:sql > insert into menu 
+ (restaurantid,item,price,itemid,lastchange)
+ VALUES(:restaurantid, :item, :price , :itemid , :lastchange);</db:sql>
+		</db:bulk-insert>
+		<logger level="INFO" doc:name="Logger" doc:id="8704744a-bbaf-48b3-bc71-c92e01faed49" message="#[payload]"/>
+	</flow>
+	<flow name="maintenance-menu-bulk-update" doc:id="3ebd9590-fe2c-4ad7-b7cc-973bb9153da7" >
+		<ee:transform doc:name="CDM to update" doc:id="d05d247c-f470-45eb-8d37-87e47ec68751" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.menu map (insert,insertindex) -> {
+	  "restaurantid": insert.restaurantid as Number,
+      "item": insert.item as String,
+      "price": insert.price as Number,
+      "itemid": insert.itemid as Number,
+      "lastchange": now() as DateTime {format: "Y-M-dd HH:mm:ss"}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-update doc:name="Bulk update" doc:id="7810aecb-8c1d-493e-94d0-9e1771852654" config-ref="Database_Config">
+			<db:sql >update menu
+SET
+ restaurantid = :restaurantid,
+ item = :item,
+ price = :price,
+ itemid = :itemid,
+ lastchange = :lastchange
+ where
+ restaurantid = :restaurantid
+ and   itemid = :itemid
+</db:sql>
+		</db:bulk-update>
+		<logger level="INFO" doc:name="Logger" doc:id="bd6224bb-aafa-44b4-b84c-e46b694f7d46" message="#[payload]"/>
+	</flow>
+	<flow name="maintenance-menu-bulk-delete" doc:id="0949770c-89c7-4644-b0b5-715e18cb5576" >
+		<ee:transform doc:name="CDM to delete" doc:id="16afda56-2dcf-4528-9424-7ce4c3365dc3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.menu map (insert,insertindex) -> {
+	  "restaurantid": insert.restaurantid as Number,
+      "item": insert.item as String,
+      "price": insert.price as Number,
+      "itemid": insert.itemid as Number,
+      "lastchange": now() as DateTime {format: "Y-M-dd HH:mm:ss"}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:bulk-delete doc:name="Bulk delete" doc:id="8b98a8b8-861f-4cce-a718-318e559900ef" config-ref="Database_Config">
+			<db:sql >delete from menu
+ where
+ restaurantid = :restaurantid
+ and   itemid = :itemid</db:sql>
+		</db:bulk-delete>
+		<logger level="INFO" doc:name="Logger" doc:id="9d898b49-471e-4fd7-a0aa-4908a69dd55c" message="#[payload]"/>
+	</flow>
+	<flow name="maintenance-menu-delete" doc:id="7deeece4-c055-47ff-8378-b748457c25f0" >
+		<db:delete doc:name="Delete" doc:id="852db94d-815e-4714-9ab5-e2f8ce33740f" config-ref="Database_Config">
+			<db:sql >delete from menu
+where
+restaurantid = :restaurantid</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+  'restaurantid' :  payload.keys.keyvalue[?($.name == "id")][0].value
+}]]]></db:input-parameters>
+		</db:delete>
+		<logger level="INFO" doc:name="Logger" doc:id="5036c66c-cdc0-4f5b-93a6-d6363a15e596" message="#[payload]"/>
+	</flow>	
+	
+	
+</mule>

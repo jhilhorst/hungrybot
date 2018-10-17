@@ -1,8 +1,8 @@
 form: FIXEDWIDTH
 name: 'flatFile'
 values: 
-- { name: 'itemid', type: String, length: 2 }
+- { name: 'itemid', type: String, length: 3 }
 - { name: 'separator', type: String, length: 2,tagValue: '-' }
-- { name: 'item', type: String, length: 25 }
+- { name: 'item', type: String, length: 30 }
 - { name: 'separator', type: String, length: 5,tagValue: 'Eur. ' }
 - { name: 'price', type: String, length: 25 }

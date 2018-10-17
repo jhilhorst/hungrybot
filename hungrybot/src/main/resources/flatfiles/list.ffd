@@ -3,6 +3,9 @@ name: 'list'
 values: 
 - { name: 'count', type: String, length: 2 }
 - { name: 'separator', type: String, length: 2,tagValue: 'x' }
-- { name: 'itemname', type: String, length: 25 }
+- { name: 'itemname', type: String, length: 30 }
+- { name: 'separator', type: String, length: 2,tagValue: '(' }
+- { name: 'itemid', type: String, length: 3 }
+- { name: 'separator', type: String, length: 2,tagValue: ')' }
 - { name: 'separator', type: String, length: 2,tagValue: ' ' }
 - { name: 'name', type: String, length: 25 }

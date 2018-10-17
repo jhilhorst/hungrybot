@@ -1,0 +1,60 @@
+slash:
+  no.vote.progress: "Geen actieve stemming"
+  forgot.vote: "Je bent vergeten om het nummer van het restaurant mee te geven. Type /restaurants voor een lijst van actieve restaurants"
+  vote.noted: "Stem genoteerd."
+  vote.updated: "Stem bijgewerkt"
+  order: "Order"
+  noted: "genoteerd"
+  cancelled: "verwijderd"
+  notexist: "bestaat niet"
+
+
+api:
+  not.active: "Hungrybot is niet actief."
+
+error:
+  cancel.order: "Er ging iets fout met het verwijderen van een order."
+  something.wrong: "Oops er ging iets fout."
+  unknown.action: "Onbekende actie."
+  unknown.maintenance.type: "Onbekend onderhouds type"
+  
+email:
+  order.from: "Order van"
+  order.for: "Order voor"
+  date: "Datum"
+  total.order.price: "Totale order kosten."
+  restaurant: "Restaurant"
+  prefer.order.email: "prefereerd een bestelling via email, er is een aparte email verstuurd met de order naar"
+  placed.via: "wil de order geplaatst hebben via"
+  attached.excel: "Gberuik de bijgevoegde excel om de order te plaatsen."
+  from: "van"
+  username: "Gebruikersnaam"
+  itemname: "Itemnaam"
+  quantity: "Aantal"
+  price: "Prijs"
+  totalitems: "Totaalitems"
+  voteid: "Stemmingid"
+  attached.spreadsheet: "Zie de bijgevoegde excel sheet"
+  internal.email: "Hungrybot: Interne details voor order"
+  
+scheduler:
+  start.vote: "Tijd om te stemmen."
+  start.vote.tip1: "Type /restaurants voor een lijst van deelnemende restaurants."
+  start.vote.tip2: "Na dat type je /vote met het nummer van het restaurant."
+  end.vote.winner: "Stemming is klaar. De winnaar is"
+  end.vote.ordering: "Dus start orderen:"
+  end.vote.ordering.tip1: "Gebruik /menu voor de menulijst van het restaurant dat gewonnen heeft."
+  order.reminder: "Attentie: 15 minuten nog om je order te plaatsen."
+  order.finished: "Tijd is op: Er kunnen geen orders meer geplaatst worden"
+  
+maintenance:
+   
+  restaurant:
+    inserted: "Restaurant ingevoerd"
+    updated: "Restaurant bijgewerkt"
+    deleted: "Restaurant en gerelateerd menu verwijderd."
+    
+  user:
+    updated: "Gebruiker details bijgewerkt"
+    deleted: "Gebruiker verwijderd"
+    

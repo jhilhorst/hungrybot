@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<flow name="maintenance-user-update" doc:id="8e830ad9-e2cc-4fb4-8b94-cbaa983a06e3" >
+		<logger level="INFO" doc:name="Logger" doc:id="9f038fb7-574d-433f-9851-64a87014aec3" message="#[payload]"/>
+		<db:update doc:name="Update" doc:id="a605b542-c8ba-4f52-aa00-caf8e9fec76e" config-ref="Database_Config">
+			<db:sql>update  users
+SET 
+realname = :realname,
+employeeid = :employeeid,
+role = :role,
+email = :email
+where
+userid = :userid
+and id = :id
+</db:sql>
+			<db:input-parameters><![CDATA[#[{
+   'realname' : payload.columns.keyvalue[?($.name == "realname")][0].value,
+  'employeeid' :  payload.columns.keyvalue[?($.name == "employeeid")][0].value,
+  'userid' :  payload.keys.keyvalue[?($.name == "userid")][0].value,
+  'id' :  payload.keys.keyvalue[?($.name == "id")][0].value,
+  'role' : payload.columns.keyvalue[?($.name == "role")][0].value,
+  'email' : payload.columns.keyvalue[?($.name == "email")][0].value
+}]]]></db:input-parameters>
+		</db:update>
+		<set-payload value="${maintenance.user.updated}" doc:name="Set Payload" doc:id="257cffcb-986a-42b2-b1c8-ffa0459bfa93" />
+	
+</flow>
+	<flow name="maintenance-user-delete" doc:id="47aaebe0-6a9c-40d9-8a85-77e96e586437" >
+		<logger level="INFO" doc:name="Logger" doc:id="e9754428-1979-4174-89d6-48c6fba92f71" message="#[payload]"/>
+		<db:delete doc:name="Delete" doc:id="1395c347-c65b-4946-b040-2130d537321d" config-ref="Database_Config">
+			<db:sql >delete from users
+where
+userid = :userid
+and id = :id
+</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+  'userid' :  payload.keys.keyvalue[?($.name == "userid")][0].value,
+  'id' :  payload.keys.keyvalue[?($.name == "id")][0].value
+}]]]></db:input-parameters>
+		</db:delete>
+		<set-payload value="${maintenance.user.deleted}" doc:name="Set Payload" doc:id="bc63c840-7335-4130-b7f3-c5339677fa0f" />
+	
+</flow>	
+	</mule>

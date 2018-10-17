@@ -29,6 +29,9 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 			<when expression='#[payload.slack.command == "/order"]' >
 				<flow-ref doc:name="slash-insertorder" doc:id="dc7c8776-db57-4bd9-a8b5-c1dc10b6f9e3" name="slash-insertorder"/>
 			</when>
+			<when expression='#[payload.slack.command == "/cancelorder"]' >
+				<flow-ref doc:name="slash-cancelorder" doc:id="c7442258-d671-4c07-b53d-74828d66ed3b" name="slash-cancelorder"/>
+			</when>
 			<otherwise >
 				<set-payload value="unknown command
 				available commands are:
@@ -81,13 +84,8 @@ if (payload[0].closed == 0 ) false else true as Boolean
 			</ee:message>
 		</ee:transform>
 	</flow>
-	<flow name="global-prepare-order" doc:id="f60b9133-84c3-46e2-99d1-1404af5db0fc" >
-		<scheduler doc:name="Scheduler" doc:id="4a63c5ac-dfd3-4437-be30-17f7b1b02a8f" >
-			<scheduling-strategy >
-				<cron expression="${hungrybot.finished.cron}" />
-			</scheduling-strategy>
-		</scheduler>
-		<db:select doc:name="Get last order" doc:id="1fab8562-ddfd-4aa4-bfed-ef69c28713d9" config-ref="Database_Config" target="order">
+	<flow name="global-send-order" doc:id="6af3710a-db7c-452e-ab03-08d6bd630b7f" >
+		<db:select doc:name="Get last order with user" doc:id="0a432a75-ccc5-4ff3-a377-e53a58b15b82" config-ref="Database_Config" target="order">
 			<db:sql >select 
 count(orders.itemid) as &quot;count&quot;,
 orders.itemname ,
@@ -95,6 +93,8 @@ menu.price,
 menu.price * count(orders.itemid) totalitem,
 users.name as &quot;username&quot;,
 restaurants.name as &quot;restaurant&quot;,
+restaurants.ordering,
+restaurants.email,
 orders.voteid ,
 (select active.date from active where active.id = (select max(id) from active) ) as &quot;orderdate&quot;
 from 
@@ -108,23 +108,23 @@ and users.userid = orders.userid
 and orders.restaurantid = restaurants.id
 and orders.itemid = menu.itemid
 and orders.restaurantid = menu.restaurantid
-group by orders.itemname,users.name,restaurants.name,menu.price,orders.voteid
+group by orders.itemname,users.name,restaurants.name,menu.price,orders.voteid, restaurants.ordering, restaurants.email
 order by users.name</db:sql>
 		</db:select>
-		<ee:transform doc:name="Create excel / create body" doc:id="1f105877-c4b1-4bbe-bea1-0ab6f544fef2" >
-			<ee:message >
+		<ee:transform doc:name="Create excel / create body" doc:id="ae26dc7f-a391-4979-83fe-c5f0145aa12d">
+			<ee:message>
 			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="orderxslx" ><![CDATA[%dw 2.0
-//output application/xlsx header=true
-output application/json
+			<ee:variables>
+				<ee:set-variable variableName="orderxslx"><![CDATA[%dw 2.0
+output application/xlsx header=true
+//output application/json
 ---
 {
 	Sheet1: vars.order map (order, orderindex) -> {	 
 		restaurant: order.restaurant,
 		username: order.username,
 		itemname: order.itemname,
-		count: order.count,
+		quantity: order.count,
 		price: order.price ,
 		totalprice: order.totalitem,
 		voteid: order.voteid,
@@ -132,45 +132,69 @@ output application/json
 	
   }
 }]]></ee:set-variable>
-				<ee:set-variable variableName="emailbody" ><![CDATA[%dw 2.0
+				<ee:set-variable variableName="emailbody"><![CDATA[%dw 2.0
 output application/xml
 ---
  html: {
- 	h1: 'Order for ' ++ vars.order.restaurant[0],
- 	h3: 'Date ' ++ (vars.order.orderdate[0] as Date),
- 	h5: 'Total order price ' ++ (sum(vars.order.price)),
+ 	h1: p('email.order.for') ++ " " ++ vars.order.restaurant[0],
+ 	h3: p('email.date') ++ " " ++ (vars.order.orderdate[0] as Date),
+ 	h5: p('email.total.order.price') ++ " " ++ (sum(vars.order.price)),
+ 	h4: { 
+ 		br:  (if (vars.order.ordering[0] == 'email') p('email.restaurant') ++ " " ++ vars.order.restaurant[0] 
+ 			++ " " ++ p('email.prefer.order.email') ++ " "
+ 			++ vars.order.email[0]
+ 			else p('email.restaurant') ++ " " ++ vars.order.restaurant[0] ++ " " ++ p('email.placed.via') ++ " " ++ vars.order.ordering[0] ++ "."),
+ 		br: ( if (vars.order.ordering[0] == 'email') ""
+ 			else p('email.attached.excel') )
+ 	},
   table: { tr: {	
-	th: 'Restaurant',
-	th: 'Username',
-	th: 'Itemname',
-	th: 'Count',
-	th: 'Price' ,
-	th: 'Totalitems',
-	th: 'Voteid',
-	th: 'Date'
+	th: p('email.restaurant'),
+	th: p('email.username'),
+	th: p('email.itemname'),
+	th: p('email.quantity'),
+	th: p('email.price'),
+	th: p('email.totalitems'),
+	th: p('email.voteid'),
+	th: p('email.date')
 	
 	}, tr: vars.order map (order, orderindex) -> {	
 	td: order.restaurant,
 	td: order.username,
 	td: order.itemname,
-	td:  order.count,
+	td: order.count,
 	td: order.price ,
 	td: order.totalitem,
 	td: order.voteid,
 	td: order.orderdate as Date	
      } 
  },
- h4: 'See attached spreadsheet '
-
+ h4: p('email.attached.spreadsheet')
 }
 
 
 ]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="06851f4c-879f-4aa2-9c0d-0346046d9d4f" message="#[payload]" />
-		<db:select doc:name="Select" doc:id="6714be99-85f4-4cad-9c5e-dc7ffd813832" config-ref="Database_Config" target="sendto">
-			<db:sql >select
+		<choice doc:name="Choice" doc:id="81c626c0-b6ee-4b94-a39b-36f5be109705" >
+			<when expression="#[vars.order.ordering[0] == 'email']">
+				<scatter-gather doc:name="Scatter-Gather" doc:id="02187b9b-7bf1-4fa8-b673-5a452d8410fb" >
+					<route >
+						<flow-ref doc:name="global-send-order-admin-finance" doc:id="44321a2f-0f66-4d0d-bc54-e5c9af9a9937" name="global-send-order-admin-finance" />
+					</route>
+					<route >
+						<flow-ref doc:name="global-send-order-restaurant" doc:id="09ea7983-f738-43d4-8802-742c05da0eb0" name="global-send-order-restaurant" target="#[vars.sendtorestaurant]" />
+					</route>
+				</scatter-gather>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="global-send-order-admin-finance" doc:id="64193aa9-6527-41eb-a78e-b4d11f5342dd" name="global-send-order-admin-finance"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="global-send-order-admin-finance" doc:id="d0dc8a34-6160-410f-b6c0-6ee0a84e7229" >
+		<logger level="INFO" doc:name="Logger" doc:id="b2992821-d10f-4d6c-ac33-11cb6dc6f5d7" message="#[payload]" />
+		<db:select doc:name="Select roles" doc:id="d16f9fe7-4e94-42bf-b866-6ed416520a2f" config-ref="Database_Config" target="sendto">
+			<db:sql>select
 realname,
 email
 from
@@ -178,10 +202,7 @@ users
 where 
 role in ('ROLE_FINANCE','ROLE_ADMIN')</db:sql>
 		</db:select>
-		<email:send doc:name="Send" doc:id="361aa1bd-1732-44d7-a5c8-86b2ca5d1545" config-ref="Email_SMTP" fromAddress="${smtp.from.address}" subject="Test">
-			<email:to-addresses>
-				<email:to-address value="${smtp.to.address}" />
-			</email:to-addresses>
+		<email:send doc:name="Send" doc:id="5bda6535-dfc5-44c6-8e0b-8d7af56a5bf5" config-ref="Email_SMTP" fromAddress="${smtp.from.address}" subject="#[ p('email.internal.email') ++ &quot; &quot; ++  p('email.date') ++ &quot; &quot; ++ now() as Date]" toAddresses="#[vars.sendto.email]">
 			<email:body contentType="text/html">
 				<email:content><![CDATA[#[vars.emailbody]]]></email:content>
 			</email:body>
@@ -190,6 +211,99 @@ role in ('ROLE_FINANCE','ROLE_ADMIN')</db:sql>
 }]]]></email:attachments>
 		</email:send>
 	</flow>
+	<flow name="global-send-order-restaurant" doc:id="9ee7eb9c-67ba-46ca-8b1c-42eb1d1bfdcb" >
+		<db:select doc:name="Get last order without user" doc:id="67912f3e-4120-4e59-85e0-46ad2acf9e0f" config-ref="Database_Config" target="order">
+			<db:sql>select 
+count(orders.itemid) as &quot;count&quot;,
+orders.itemname ,
+menu.price,
+menu.price * count(orders.itemid) totalitem,
+restaurants.name as &quot;restaurant&quot;,
+restaurants.ordering,
+restaurants.email,
+orders.voteid ,
+(select active.date from active where active.id = (select max(id) from active) ) as &quot;orderdate&quot;
+from 
+orders,
+restaurants,
+menu
+where
+orders.voteid = (select max(id) from active) 
+and orders.restaurantid = restaurants.id
+and orders.itemid = menu.itemid
+and orders.restaurantid = menu.restaurantid
+group by orders.itemname,restaurants.name,menu.price,orders.voteid, restaurants.ordering, restaurants.email
+order by orders.itemname</db:sql>
+		</db:select>
+		<ee:transform doc:name="Create excel / create body" doc:id="9a89ba2c-fb1d-4943-a2ba-f027d3fb7f9a" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="orderxslx" ><![CDATA[%dw 2.0
+output application/xlsx header=true
+//output application/json
+---
+{
+	Sheet1: vars.order map (order, orderindex) -> {	 
+		restaurant: order.restaurant,
+		itemname: order.itemname,
+		quantity: order.count,
+		orderdate: order.orderdate as Date
+	
+  }
+}]]></ee:set-variable>
+				<ee:set-variable variableName="emailbody" ><![CDATA[%dw 2.0
+output application/xml
+---
+ html: {
+ 	h1: p('email.order.for') ++ " " ++ vars.order.restaurant[0] ++ " " ++ p('email.from') ++ " " ++ p('company'),
+ 	h3: p('email.date') ++ " " ++ (vars.order.orderdate[0] as Date),
+  table: { tr: {	
+	th: p('email.restaurant'),
+	th: p('email.itemname'),
+	th: p('email.quantity'),
+	th: p('email.date')
+	
+	}, tr: vars.order map (order, orderindex) -> {	
+	td: order.restaurant,
+	td: order.itemname,
+	td: order.count,
+	td: order.orderdate as Date	
+     } 
+ },
+ h4: p('email.attached.spreadsheet')
+
+}
+
+
+]]></ee:set-variable>
+			
+</ee:variables>
+		</ee:transform>
+		<db:select doc:name="Select roles" doc:id="c6a559ae-5bea-4bef-ab3d-1ff6e3addbc1" config-ref="Database_Config" target="sendto">
+			<db:sql >select
+name,
+email
+from
+restaurants
+where 
+name = :restaurant
+and ordering ='email'</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+'restaurant' : vars.order[0].restaurant
+}]]]></db:input-parameters>
+		
+</db:select>
+		<email:send doc:name="Send" doc:id="07871f8e-5051-4214-ac80-b0a05d07717f" config-ref="Email_SMTP" fromAddress="${smtp.from.address}" subject="#[ p('email.order.from') ++ &quot; &quot; ++  p('company') ++ &quot; &quot; ++ p('email.date') ++ now() as Date]" toAddresses="#[vars.sendto.email]">
+			<email:body contentType="text/html">
+				<email:content><![CDATA[#[vars.emailbody]]]></email:content>
+			</email:body>
+			<email:attachments><![CDATA[#[{
+         ('Order-' ++ 'ID' ++ vars.order[0].voteid ++ "-" ++ now() as Date  ++ '.xlsx') : vars.orderxslx
+}]]]></email:attachments>
+		</email:send>
+	
+</flow>	
 	<error-handler name="globalErrorHandler" doc:id="5a19ec92-4200-407b-8317-d152cb9c0fb8" >
 		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e8f1128e-ea17-46ce-aeff-94fefec4f8f3" type="NOT_PERMITTED">
 			<logger level="INFO" doc:name="Logger" doc:id="f921b934-b391-4a42-b9c8-aea5612cdf4e" message="#[payload]"/>

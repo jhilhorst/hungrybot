@@ -1,7 +1,60 @@
 slash:
   no.vote.progress: "No vote in progress."
-  forgot.vote: "You forgot the send the number of the restaurant you want to vote for. Type /restaurants for a list of competing restaurants."
+  forgot.vote: "You forgot to send the number of the restaurant you want to vote for. Type /restaurants for a list of competing restaurants."
+  vote.noted: "Vote noted"
+  vote.updated: "Vote updated"
+  order: "Order "
+  noted: " noted"
+  cancelled: " cancelled"
+  notexist: "does not exist"
+
 
 api:
   not.active: "Hungrybot not active."
+
+error:
+  cancel.order: "Something went wrong with cancelling the order."
   something.wrong: "Oops something went wrong."
+  unknown.action: "Unknown action."
+  unknown.maintenance.type: "Unknown maintenance type"
+  
+email:
+  order.from: "Order from"
+  order.for: "Order for"
+  date: "Date"
+  total.order.price: "Total order price"
+  restaurant: "Restaurant"
+  prefer.order.email: "prefers ordering bij email, so a separate email with the order has been send to"
+  placed.via: "wants the order to be placed via"
+  attached.excel: "Use the attached excel to place your order."
+  from: "from"
+  username: "Username"
+  itemname: "Itemname"
+  quantity: "Quantity"
+  price: "Price"
+  totalitems: "Totalitems"
+  voteid: "Voteid"
+  attached.spreadsheet: "See attached spreadsheet"
+  internal.email: "Hungrybot: Internal details for order"
+  
+scheduler:
+  start.vote: "Time to start voting."
+  start.vote.tip1: "Type /restaurants for a list of competing restaurants."
+  start.vote.tip2: "After that type /vote with the number of the restaurant."
+  end.vote.winner: "Vote Ended. The winner is"
+  end.vote.ordering: "So start ordering:"
+  end.vote.ordering.tip1: "Use /menu for the menulist of the restaurant that won."
+  order.reminder: "Attention: 15 minutes left to place your order."
+  order.finished: "Time out: No more orders can be placed"
+  
+maintenance:
+   
+  restaurant:
+    inserted: "Restaurant inserted"
+    updated: "Restaurant updated"
+    deleted: "Restaurant and related menu items deleted."
+    
+  user:
+    updated: "User details updated"
+    deleted: "User deleted"
+    

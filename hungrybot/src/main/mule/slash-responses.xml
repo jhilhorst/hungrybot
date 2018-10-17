@@ -11,13 +11,14 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<db:select doc:name="get list" doc:id="f11d03fe-86d2-49d8-a29d-64a43d5b765e" config-ref="Database_Config">
 			<db:sql >select
 count(orders.itemid) as count,
-orders.itemname
+orders.itemname,
+orders.itemid
 from
 orders
 where
 orders.userid = :userid
 and orders.voteid =  (select max(id) from active)
-group by orders.itemname</db:sql>
+group by orders.itemname, orders.itemid</db:sql>
 			<db:input-parameters ><![CDATA[#[{
 'userid' : payload.slack.user_id,
 'name' : payload.slack.user_name
@@ -38,14 +39,15 @@ payload]]></ee:set-payload>
 			<db:sql >select 
 count(orders.itemid) as count,
 orders.itemname ,
-users.name
+users.name,
+orders.itemid
 from 
 orders,
 users
 where
 orders.voteid = (select max(id) from active) 
 and users.userid = orders.userid
-group by orders.itemname,users.name
+group by orders.itemname,users.name, orders.itemid
 order by users.name</db:sql>
 		</db:select>
 		<ee:transform doc:name="Response list all" doc:id="6156cfbe-4acf-4126-b2d3-af6343d543da" >
@@ -61,7 +63,11 @@ payload]]></ee:set-payload>
 		<db:select doc:name="Select menu" doc:id="5476cc1f-0fdb-4dd5-80aa-f289d80567b6" config-ref="Database_Config" target="menu">
 			<db:sql >select 
 restaurants.name,
-menu.*
+menu.item,
+menu.restaurantid,
+menu.itemid,
+menu.price,
+menu.id
 from
 active,
 restaurants,
@@ -157,7 +163,7 @@ and voteid =  (select max(id) from active)</db:sql>
 'vote' : payload.slack.text
 }]]]></db:input-parameters>
 				</db:update>
-				<set-payload value="Vote updated" doc:name="Set Payload" doc:id="dfd10f07-8669-42d4-8212-1180100870cf" />
+				<set-payload value="${slash.vote.updated}" doc:name="Set Payload" doc:id="dfd10f07-8669-42d4-8212-1180100870cf" />
 			</when>
 			<otherwise >
 				<db:insert doc:name="Insert vote" doc:id="3e79b6b7-0fc2-4e87-a925-6256eb44ed65" config-ref="Database_Config">
@@ -177,13 +183,70 @@ values(
 'vote' : payload.slack.text
 }]]]></db:input-parameters>
 		</db:insert>
-				<set-payload value="Vote noted" doc:name="Set Payload" doc:id="5f4e9e4c-b477-4822-8c69-71382f66ab23" />
+				<set-payload value="${slash.vote.noted}" doc:name="Set Payload" doc:id="5f4e9e4c-b477-4822-8c69-71382f66ab23" />
 			</otherwise>
 		</choice>
 	</flow>
 	<flow name="slash-insertorder" doc:id="58252959-18a9-4834-9bb2-c3958d63ca60" >
 		<flow-ref doc:name="global-checkUserExist" doc:id="4abaad9f-d722-4886-ac34-ef147710722a" name="global-checkUserExist" />
 		<db:select doc:name="Select menu item" doc:id="c2b456b6-8994-41fc-b9e5-7d39d2d29edc" config-ref="Database_Config" target="selecteditem">
+			<db:sql >select 
+restaurants.id,
+menu.itemid,
+votes.voteid,
+menu.item
+from
+votes,
+restaurants,
+menu
+where 
+restaurants.id = votes.vote
+and menu.restaurantid = restaurants.id
+and votes.voteid = (select max(id) from active)
+and menu.itemid = :itemid
+and menu.itemid = (select max(itemid) from menu where menu.itemid = :itemid)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+'userid' : payload.slack.user_id,
+'name' : payload.slack.user_name,
+'itemid' : payload.slack.text,
+}]]]></db:input-parameters>
+		</db:select>
+		<db:insert doc:name="Insert order" doc:id="edfa4ff1-007c-47f4-906d-9c873568fc5c" config-ref="Database_Config" target="insertedorderresponse">
+			<db:sql >insert into orders(userid,restaurantid,itemid,datetime,voteid,itemname)
+select 
+users.userid as &quot;userid&quot;,
+restaurants.id  as &quot;restaurantid&quot;,
+menu.itemid  as &quot;itemid&quot;,
+DATE_FORMAT(NOW(),'%Y%m%d%H%i%s') as &quot;datetime&quot;,
+(select max(id) from active) as &quot;voteid&quot;,
+menu.item  as &quot;itemid&quot;
+from
+restaurants,
+menu,
+users
+where 
+restaurants.id = (select max(winner) from active)
+and menu.restaurantid = restaurants.id
+and menu.itemid = :itemid
+and users.userid = :userid</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+'userid' : payload.slack.user_id,
+'name' : payload.slack.user_name,
+'itemid' : payload.slack.text,
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="response order" doc:id="906e181a-3ed3-4e21-b36f-5683b1cf4d7f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+p('slash.order') ++ " *" ++ vars.selecteditem[0].item ++ "* " ++ p('slash.noted')]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="slash-cancelorder" doc:id="74a48a25-c490-446c-8899-f898272eeaa7" >
+		<flow-ref doc:name="global-checkUserExist" doc:id="3d82dce5-0be8-4282-9505-e4c6a6754450" name="global-checkUserExist"/>
+		<db:select doc:name="Select menu item" doc:id="c226e193-acd9-4e41-8601-50f23860df7b" config-ref="Database_Config" target="selecteditem" >
 			<db:sql >select 
 users.userid,
 restaurants.id,
@@ -199,7 +262,6 @@ where
 restaurants.id = votes.vote
 and menu.restaurantid = restaurants.id
 and votes.voteid = (select max(id) from active)
-and votes.userid = users.userid
 and users.userid= :userid
 and menu.itemid = :itemid
 and menu.lastchange = (select max(lastchange) from menu)</db:sql>
@@ -209,41 +271,45 @@ and menu.lastchange = (select max(lastchange) from menu)</db:sql>
 'itemid' : payload.slack.text,
 }]]]></db:input-parameters>
 		</db:select>
-		<db:insert doc:name="Insert order" doc:id="edfa4ff1-007c-47f4-906d-9c873568fc5c" config-ref="Database_Config" target="insertedorderresponse">
-			<db:sql >insert into orders(userid,restaurantid,itemid,datetime,voteid,itemname)
-select 
-users.userid,
-restaurants.id,
-menu.itemid,
-DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'),
-votes.voteid,
-menu.item
-from
-votes,
-restaurants,
-menu,
-users
+		<db:delete doc:name="Delete order" doc:id="f68311de-20ac-4fda-bd03-3d9d95e80be5" config-ref="Database_Config">
+			<db:sql >delete from orders
 where 
-restaurants.id = votes.vote
-and menu.restaurantid = restaurants.id
-and votes.voteid = (select max(id) from active)
-and votes.userid = users.userid
-and users.userid= :userid
-and menu.itemid = :itemid</db:sql>
+orders.userid = :userid
+and orders.itemid = :itemid
+and  orders.voteid = :voteid
+
+</db:sql>
 			<db:input-parameters ><![CDATA[#[{
-'userid' : payload.slack.user_id,
-'name' : payload.slack.user_name,
+'userid' : payload.slack.user_id ,
 'itemid' : payload.slack.text,
+'voteid' : vars.selecteditem.voteid[0]
 }]]]></db:input-parameters>
-		</db:insert>
-		<ee:transform doc:name="response order" doc:id="906e181a-3ed3-4e21-b36f-5683b1cf4d7f" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		</db:delete>
+		<choice doc:name="Choice" doc:id="ee210191-d4c3-4d63-bf7c-f51744c1f688" >
+			<when expression="#[payload &gt;= 1]">
+				<ee:transform doc:name="response cancel order" doc:id="f3b77357-ccc0-42f7-89ca-3e6129c84b73">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output text/plain
 ---
-'Order ' ++ vars.selecteditem[0].item ++ ' noted']]></ee:set-payload>
+p('slash.order') ++ " *" ++ vars.selecteditem[0].item ++ "* " ++ p('slash.cancelled')]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<when expression="#[payload == 0]">
+				<ee:transform doc:name="response cancel order" doc:id="9c339197-7d8c-4dc0-ba5f-1c93451b999f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+p('slash.order') ++ " *" ++ vars.selecteditem[0].item ++ "* " ++ p('slash.notexist')]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<set-payload value="${error.cancel.order}" doc:name="Set Payload" doc:id="a963e6de-adf4-4452-9834-5b720fd88698" />
+			</otherwise>
+		</choice>
 	</flow>
 	
 	

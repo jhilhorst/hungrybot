@@ -56,7 +56,7 @@ slack: {
 			
 			</when>
 			<otherwise>
-				<set-payload value="${api.something.wrong}" doc:name="Set Payload" doc:id="d1dc6574-1302-4788-b032-1e3473b9bd86" />
+				<set-payload value="${error.something.wrong}" doc:name="Set Payload" doc:id="d1dc6574-1302-4788-b032-1e3473b9bd86" />
 			</otherwise>
 		</choice>
 		<logger level="INFO" doc:name="Logger" doc:id="5000ff7e-b135-4f8a-abef-2a9d39ac7667" message="#[payload]"/>
